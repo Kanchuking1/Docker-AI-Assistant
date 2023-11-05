@@ -1,7 +1,7 @@
 import React from 'react';
 import Button from '@mui/material/Button';
 import { createDockerDesktopClient } from '@docker/extension-api-client';
-import { Stack, TextField, Typography, Container, Paper } from '@mui/material';
+import { Stack, TextField, Typography, Container, Paper, CircularProgress, Box, LinearProgress } from '@mui/material';
 
 const CHAT_ENDPOINT = "/chat";
 
@@ -16,15 +16,17 @@ function useDockerDesktopClient() {
 export function App() {
   const [query, setQuery] = React.useState<string>();
   const [response, setResponse] = React.useState<string>();
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const ddClient = useDockerDesktopClient();
 
   const fetchAndDisplayResponse = async () => {
     try {
+      setIsLoading(true);
       const result = await ddClient.extension.vm?.service?.post(CHAT_ENDPOINT, {
         message: query
       });
-      console.log(result);
       setResponse(JSON.stringify(result));
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     }
@@ -54,9 +56,13 @@ export function App() {
           </Button>
         </Stack>
         <Paper elevation={2} sx={{my: 2}}>
+          {isLoading ? 
+          <Box sx={{ width: '100%' }}>
+            <LinearProgress />
+          </Box>: 
           <Typography sx={{ p : 3}} variant="body2">
             {response ?? ' '}
-          </Typography>
+          </Typography>}
         </Paper>
   </Container>
   );
