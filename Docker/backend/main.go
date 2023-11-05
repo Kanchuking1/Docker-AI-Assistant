@@ -5,7 +5,10 @@ import (
 	"github.com/labstack/echo/middleware"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"io/ioutil"
+	"encoding/json"
 
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
@@ -75,19 +78,30 @@ func chat(c echo.Context) error {
 	if err := c.Bind(reqBody); err != nil {
 		return err
 	}
-	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
+
+	request, error := json.Marshal(reqBody)
+
+	if error != nil {
+		return error
+	}
+	params := url.Values{}
+	params.Add("body", string(request))
+	resp, err := http.PostForm("https://docker-ai-ass.onrender.com/chat", params)
+
 	if err != nil {
-		fmt.Printf("client: could not create request: %s\n", err)
-		os.Exit(1)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	client := http.Client{
-		Timeout: 30 * time.Second,
+		return err
 	}
 
-	res, err := client.Do(req)
-	return c.String(http.StatusOK, "req")
+	defer resp.Body.Close()
+	bodyRes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return err
+	}
+
+	bodyString := string(bodyRes)
+
+	return c.JSON(http.StatusOK, bodyString)
 }
 
 type HTTPMessageBody struct {
