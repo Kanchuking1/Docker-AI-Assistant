@@ -46,6 +46,10 @@ func main() {
 
 	router.GET("/hello", hello)
 
+	router.GET("/chat", chatGet)
+
+	router.POST("/chat", chat)
+
 	logger.Fatal(router.Start(startURL))
 }
 
@@ -55,6 +59,35 @@ func listen(path string) (net.Listener, error) {
 
 func hello(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, HTTPMessageBody{Message: "hello"})
+}
+
+func chatGet(c echo.Context) error {
+	return c.String(http.StatusOK, "ok")
+}
+
+func chat(c echo.Context) error {
+	type body struct {
+		Message string `json:"message"`
+	}
+
+	reqBody := new(body)
+
+	if err := c.Bind(reqBody); err != nil {
+		return err
+	}
+	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
+	if err != nil {
+		fmt.Printf("client: could not create request: %s\n", err)
+		os.Exit(1)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	res, err := client.Do(req)
+	return c.String(http.StatusOK, "req")
 }
 
 type HTTPMessageBody struct {
