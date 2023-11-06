@@ -5,10 +5,10 @@ import (
 	"github.com/labstack/echo/middleware"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"io/ioutil"
 	"encoding/json"
+	"bytes"
 
 	"github.com/labstack/echo"
 	"github.com/sirupsen/logrus"
@@ -84,16 +84,26 @@ func chat(c echo.Context) error {
 	if error != nil {
 		return error
 	}
-	params := url.Values{}
-	params.Add("body", string(request))
-	resp, err := http.PostForm("https://docker-ai-ass.onrender.com/chat", params)
 
+	posturl := "https://docker-ai-ass.onrender.com/chat"
+
+	bodyReader := []byte(string(request))
+
+	r, err := http.NewRequest("POST", posturl, bytes.NewBuffer(bodyReader))
 	if err != nil {
-		return err
+		panic(err)
 	}
 
-	defer resp.Body.Close()
-	bodyRes, err := ioutil.ReadAll(resp.Body)
+	r.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{}
+	res, err := client.Do(r)
+	if err != nil {
+		panic(err)
+	}
+
+	defer res.Body.Close()
+	bodyRes, err := ioutil.ReadAll(res.Body)
 
 	if err != nil {
 		return err
