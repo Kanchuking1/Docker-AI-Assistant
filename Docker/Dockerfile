@@ -17,7 +17,7 @@ COPY ui/package.json /ui/package.json
 COPY ui/package-lock.json /ui/package-lock.json
 RUN --mount=type=cache,target=/usr/src/app/.npm \
     npm set cache /usr/src/app/.npm && \
-    npm ci
+    npm ci --force
 # install
 COPY ui /ui
 RUN npm run build
