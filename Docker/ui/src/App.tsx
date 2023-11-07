@@ -123,9 +123,9 @@ export function App() {
     bgcolor: 'secondary',
     height: '100vh'
   }}> 
-        <Typography variant="h3" alignContent={"center"}>Docker AI Assistant</Typography>
+        <Typography variant="h3" alignContent={"center"}>Docker Co-pilot</Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-          Here is your complete AI Assistant
+          Elevate Your Docker Experience with AI
         </Typography>
         <Stack direction="row" alignItems="start" spacing={2} sx={{ mt: 4 }}>
           <TextField
