@@ -6,9 +6,9 @@ import { MuiMarkdown } from 'mui-markdown';
 
 const CHAT_ENDPOINT = "/chat";
 
-const TEST_QUERY = "Can you write a DockerFile for a project using Postgres React and Express?";
+const TEST_QUERY = "How to pull a docker image for the latest version of postgres?";
 
-const TEST_RESPONSE = "Sure! Here's a Dockerfile that uses the latest images of Postgres and Express:\n\n```Dockerfile\n# Use the official Postgres image\nFROM postgres:latest\n\n# Set the environment variables for Postgres\nENV POSTGRES_USER postgres\nENV POSTGRES_PASSWORD password\n\n# Create a database\nENV POSTGRES_DB mydatabase\n\n# Copy the SQL script to initialize the database\nCOPY init.sql /docker-entrypoint-initdb.d/\n\n# Use the official Node.js image\nFROM node:latest\n\n# Set the working directory\nWORKDIR /app\n\n# Copy package.json and package-lock.json\nCOPY package*.json ./\n\n# Install project dependencies\nRUN npm install\n\n# Copy the application source code\nCOPY . .\n\n# Expose the port that the Express app runs on\nEXPOSE 3000\n\n# Start the Express app\nCMD [ \"npm\", \"start\" ]\n```\n\nNote: This Dockerfile assumes that you have a `init.sql` file in the same directory that contains the SQL script to initialize the database. Adjust the PostgreSQL credentials and database name as per your requirement.\n\nTo build and run the Docker image:\n\n1. Make sure you have Docker installed.\n2. Place the `Dockerfile` and `init.sql` in the same directory as your Express project.\n3. Open a terminal and navigate to the project directory.\n4. Run the following commands:\n\n```bash\n# Build the Docker image\ndocker build -t myapp .\n\n# Run the Docker container\ndocker run -p 3000:3000 myapp\n```\n\nReplace `myapp` with the desired name for your Docker image and container.";
+const TEST_RESPONSE = "To pull the latest version of the PostgreSQL docker image, you can follow these steps:\n\n1. Open your terminal or command prompt.\n\n2. Use the `docker pull` command followed by the image name and tag to fetch the latest version of the PostgreSQL image. By default, the latest version is tagged as `latest`. However, it's recommended to specify a version explicitly to ensure compatibility and stability. For example, to pull the latest PostgreSQL version 13, run the following command:\n\n   ```\n   docker pull postgres:13\n   ```\n\n   This command will fetch the PostgreSQL version 13 image from Docker Hub.\n\n3. Docker will now download the latest PostgreSQL image specified. The command output will display the progress of the image download.\n\n4. After the download is complete, you can verify the pulled image by listing all Docker images using the `docker images` command:\n\n   ```\n   docker images\n   ```\n\n   The list will include the PostgreSQL image you just downloaded, along with its version and other details.\n\nNow you have successfully pulled the latest PostgreSQL docker image for version 13.";
 
 // Note: This line relies on Docker Desktop's presence as a host application.
 // If you're running this React app in a browser, it won't work properly.
@@ -66,22 +66,28 @@ const CodeSnippet = ({ children, ...props } : {
           }
         }}>COPY</Button>
       </ButtonGroup>
-      {codeLines.map(line => {
+      {codeLines.map((line, i) => {
         const words = line.split(" ");
         if (words.length > 0 && words[0] == "docker") {
           return <Button 
+          key={i}
           variant="text"
           sx={{
             fontFamily: "monospace",
+            fontWeight: 700,
+            color: 'orange',
             ":hover" : {
               bgcolor: "#1C262D"
             }
           }}
           onClick={async () => {
             try {
+              console.log(words[1], words.slice(2, words.length));
               const output = await ddClient.docker.cli.exec(words[1], words.slice(2, words.length));
-              ddClient.desktopUI.toast.success(output);
+              console.log(output.lines());
+              ddClient.desktopUI.toast.success(output.lines().join("\n"));
             } catch (error) {
+              console.error(error);
               ddClient.desktopUI.toast.error("Something went wrong");
             }
           }}
@@ -89,14 +95,14 @@ const CodeSnippet = ({ children, ...props } : {
             {line}
           </Button>
         }
-        return <div>{line}<br /></div>;
+        return <div key={i}>{line}<br /></div>;
       })}</Paper>
     </div>;
 }
 
 export function App() {
-  const [query, setQuery] = React.useState<string>(TEST_QUERY);
-  const [response, setResponse] = React.useState<string>(TEST_RESPONSE);
+  const [query, setQuery] = React.useState<string>();
+  const [response, setResponse] = React.useState<string>();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const ddClient = useDockerDesktopClient();
 
