@@ -111,7 +111,7 @@ func chat(c echo.Context) error {
 
 	bodyString := string(bodyRes)
 
-	return c.JSON(http.StatusOK, bodyString)
+	return c.String(http.StatusOK, bodyString)
 }
 
 type HTTPMessageBody struct {
