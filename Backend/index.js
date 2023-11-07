@@ -25,10 +25,15 @@ const systemMessage = new SystemMessage(
   "You are DockerGPT, a helpful Docker Assistant AI. Your job is to provide concise answers to user's questions. If the answer is a code snippet, strictly reply with that unless asked to explain it as welld."
 );
 app.post("/chat", async (req, res) => {
-  const { message } = req.body;
-  const text = new HumanMessage(message);
-  const response = await chat.predictMessages([systemMessage, text]);
-  res.json(response.text);
+  try {
+    const { message } = req.body;
+    const text = new HumanMessage(message);
+    const response = await chat.predictMessages([systemMessage, text]);
+    res.json(response.text);
+  } catch (err) {
+    console.log(err);
+    res.json({ error: err.message });
+  }
 });
 
 const embeddings = new OpenAIEmbeddings({
