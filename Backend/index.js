@@ -28,7 +28,7 @@ app.post("/chat", async (req, res) => {
   const { message } = req.body;
   const text = new HumanMessage(message);
   const response = await chat.predictMessages([systemMessage, text]);
-  res.json(response);
+  res.json(response.text);
 });
 
 const embeddings = new OpenAIEmbeddings({
